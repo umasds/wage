@@ -17,8 +17,8 @@ library(plyr)
 
 # Warning! R does not work with the usual Windows-style backslashes 
 #   use ordinary slashes instead! 
-datafile <- "/home/vagrant/Desktop/Dokumente/datasets/ALLBUS2012/ZA4614_v1-1-1.dta"
-
+#datafile <- "/home/vagrant/Desktop/Dokumente/datasets/ALLBUS2012/ZA4614_v1-1-1.dta"
+datafile <- "/home/arne/Downloads/ZA4614_v1-1-1.dta"
 
 #------------------------------------------------------------------------------
 # Load data (ALLBUS 2012, V1.1.1, doi:10.4232/1.11753)
@@ -173,8 +173,37 @@ levels(issp$status)[levels(issp$status)=="frau.nein"] <- "kinderlose Frau"
 # Data frame für Kinder
 df = data.frame(v353, v363, v373, v383, v393, v403, v413)
 
+
+# Kindervariable anschauen
+summary(issp$v353)
+summary(issp$v353[issp$v353 == "eig.leibl.kind"])
+summary(issp$v353[issp$v353 == "stief-,adoptivkind"])
+summary(issp$v353[issp$v353 == "eig.leibl.kind" | issp$v353 == "stief-,adoptivkind"])
+length(issp$v353[issp$v353 == "eig.leibl.kind" | issp$v353 == "stief-,adoptivkind"])
+
 # Einzelne Kinder-Dummies
-issp$kind1[issp$v353 == "eig.leibl.kind" || issp$v353 == "stief-, adoptivkind"]   <- 1
+
+#issp$kind1[issp$v353 == "eig.leibl.kind" || issp$v353 == "stief-, adoptivkind"]   <- 1
+# Darf nur ein | sein! Außerdem ist in der zweiten Bedinung ein Leerzeichen zu viel
+
+issp$kind1 <- 0
+issp$kind1[issp$v353 == "eig.leibl.kind" | issp$v353 == "stief-,adoptivkind"]   <- 1
+table(issp$kind1)
+
+issp$kind2 <- 0
+issp$kind2[issp$v363 == "eig.leibl.kind" | issp$v363 == "stief-,adoptivkind"]   <- 1
+table(issp$kind2)
+
+issp$kind3 <- 0
+issp$kind3[issp$v373 == "eig.leibl.kind" | issp$v373 == "stief-,adoptivkind"]   <- 1
+table(issp$kind3)
+
+# to be conitnued ...
+
+issp$kindsum <- issp$kind1 + issp$kind2 + issp$kind3
+table(issp$kindsum)
+
+
 issp$kind1[issp$v353 == "ehegatte"] <- 0
 issp$kind1[issp$v353 == "trifft nicht zu"] <- 0
 issp$kind1[issp$v353 == "partner<in>"] <- 0
