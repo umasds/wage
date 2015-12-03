@@ -17,8 +17,8 @@ library(plyr)
 
 # Warning! R does not work with the usual Windows-style backslashes 
 #   use ordinary slashes instead! 
-#datafile <- "/home/vagrant/Desktop/Dokumente/datasets/ALLBUS2012/ZA4614_v1-1-1.dta"
-datafile <- "/home/arne/Downloads/ZA4614_v1-1-1.dta"
+datafile <- "/home/vagrant/Desktop/Dokumente/datasets/ALLBUS2012/ZA4614_v1-1-1.dta"
+# datafile <- "/home/arne/Downloads/ZA4614_v1-1-1.dta"
 
 #------------------------------------------------------------------------------
 # Load data (ALLBUS 2012, V1.1.1, doi:10.4232/1.11753)
@@ -181,10 +181,8 @@ summary(issp$v353[issp$v353 == "stief-,adoptivkind"])
 summary(issp$v353[issp$v353 == "eig.leibl.kind" | issp$v353 == "stief-,adoptivkind"])
 length(issp$v353[issp$v353 == "eig.leibl.kind" | issp$v353 == "stief-,adoptivkind"])
 
-# Einzelne Kinder-Dummies
 
-#issp$kind1[issp$v353 == "eig.leibl.kind" || issp$v353 == "stief-, adoptivkind"]   <- 1
-# Darf nur ein | sein! Außerdem ist in der zweiten Bedinung ein Leerzeichen zu viel
+# Einzelne Kinder-Dummies
 
 issp$kind1 <- 0
 issp$kind1[issp$v353 == "eig.leibl.kind" | issp$v353 == "stief-,adoptivkind"]   <- 1
@@ -198,9 +196,24 @@ issp$kind3 <- 0
 issp$kind3[issp$v373 == "eig.leibl.kind" | issp$v373 == "stief-,adoptivkind"]   <- 1
 table(issp$kind3)
 
-# to be conitnued ...
+issp$kind4 <- 0
+issp$kind4[issp$v383 == "eig.leibl.kind" | issp$v383 == "stief-,adoptivkind"]   <- 1
+table(issp$kind4)
 
-issp$kindsum <- issp$kind1 + issp$kind2 + issp$kind3
+issp$kind5 <- 0
+issp$kind5[issp$v393 == "eig.leibl.kind" | issp$v393 == "stief-,adoptivkind"]   <- 1
+table(issp$kind5)
+
+issp$kind6 <- 0
+issp$kind6[issp$v403 == "eig.leibl.kind" | issp$v403 == "stief-,adoptivkind"]   <- 1
+table(issp$kind6)
+
+issp$kind7 <- 0
+issp$kind7[issp$v413 == "eig.leibl.kind" | issp$v413 == "stief-,adoptivkind"]   <- 1
+table(issp$kind7)
+
+
+issp$kindsum <- issp$kind1 + issp$kind2 + issp$kind3 + issp$kind4 + issp$kind5 + issp$kind6 + issp$kind7
 table(issp$kindsum)
 
 
