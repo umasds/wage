@@ -11,6 +11,7 @@
 library(foreign) # Import "foreign" datasets, e.g. SPSS, Stata, etc.
 library(Hmisc) # Various convenience functions
 library(plyr)
+library(car)
 
 #------------------------------------------------------------------------------
 # Define some constants (like filenames, paths, etc.) for consistent use
@@ -217,47 +218,37 @@ issp$kindsum <- issp$kind1 + issp$kind2 + issp$kind3 + issp$kind4 + issp$kind5 +
 table(issp$kindsum)
 
 
-issp$kind1[issp$v353 == "ehegatte"] <- 0
-issp$kind1[issp$v353 == "trifft nicht zu"] <- 0
-issp$kind1[issp$v353 == "partner<in>"] <- 0
-# issp$kind1[issp$v353 == "stief-, adoptivkind"] <- 1
-issp$kind1[issp$v353 == "bruder, schwester"] <- 0
-issp$kind1[issp$v353 == "stiefbrud.,-schwest"] <- 0
-issp$kind1[issp$v353 == "eigener enkel"] <- 0
-issp$kind1[issp$v353 == "vater, mutter"] <- 0
-issp$kind1[issp$v353 == "stiefmutter,-vater"] <- 0
-issp$kind1[issp$v353 == "schwiegerelternteil"] <- 0
-issp$kind1[issp$v353 == "schwiegerkind"] <- 0
-issp$kind1[issp$v353 == "schwager,schwaegerin"] <- 0
-issp$kind1[issp$v353 == "grossvater,-mutter"] <- 0
-issp$kind1[issp$v353 == "grosselt.d.<ehe>p."] <- 0
-issp$kind1[issp$v353 == "andere verwandte"] <- 0
-issp$kind1[issp$v353 == "nichtverwandte pers."] <- 0
+# Stundenlohn
 
-count(issp$kind1)
+# 1) Monatsstunden Haubtberuf und Nebenerwerb
+
+issp$v249 # Hauptberuf Stunden pro Woche
+issp$v257 # Nebenerwerb Stunden pro Woche
+
+issp$HBM <- issp$v249 * 4
+issp$HBM
+issp$HBM[issp$HBM>=3000] <- NA
+count(issp$HBM)
+
+issp$NEM <- issp$v257 * 4
+issp$NEM
+issp$NEM[issp$NEM>=3000] <- NA
+count(issp$NEM)
 
 
-issp$kind2[issp$v363 == "eig.leibl.kind" || issp$v363 == "stief-, adoptivkind"]   <- 1
-issp$kind2[issp$v363 == "ehegatte"] <- 0
-issp$kind2[issp$v363 == "trifft nicht zu"] <- 0
-issp$kind2[issp$v363 == "partner<in>"] <- 0
-# issp$kind2[issp$v363 == "stief-, adoptivkind"] <- 1
-issp$kind2[issp$v363 == "bruder, schwester"] <- 0
-issp$kind2[issp$v363 == "stiefbrud.,-schwest"] <- 0
-issp$kind2[issp$v363 == "eigener enkel"] <- 0
-issp$kind2[issp$v363 == "vater, mutter"] <- 0
-issp$kind2[issp$v363 == "stiefmutter,-vater"] <- 0
-issp$kind2[issp$v363 == "schwiegerelternteil"] <- 0
-issp$kind2[issp$v363 == "schwiegerkind"] <- 0
-issp$kind2[issp$v363 == "schwager,schwaegerin"] <- 0
-issp$kind2[issp$v363 == "grossvater,-mutter"] <- 0
-issp$kind2[issp$v363 == "grosselt.d.<ehe>p."] <- 0
-issp$kind2[issp$v363 == "andere verwandte"] <- 0
-issp$kind2[issp$v363 == "nichtverwandte pers."] <- 0
+# 2) Addieren
 
-count(issp$kind2)
+issp$monatsstunden <- issp$HBM + issp$NEM
+count(issp$monatsstunden)
 
 
+# 3) Stundenlohn ausrechnen
+
+count(issp$v344)
+issp$einkommen <- issp$v344
+issp$einkommen[issp$einkommen>=33000] <- NA
+issp$stundenlohn <- issp$einkommen / issp$monatsstunden
+count(issp$stundenlohn)
 
 
 
