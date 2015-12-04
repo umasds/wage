@@ -6,6 +6,8 @@
 # - https://google-styleguide.googlecode.com/svn/trunk/Rguide.xml
 #------------------------------------------------------------------------------
 
+# Dies ist ein Test!
+
 #------------------------------------------------------------------------------
 # Load necessary packages
 library(foreign) # Import "foreign" datasets, e.g. SPSS, Stata, etc.
