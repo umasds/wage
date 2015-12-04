@@ -6,7 +6,6 @@
 # - https://google-styleguide.googlecode.com/svn/trunk/Rguide.xml
 #------------------------------------------------------------------------------
 
-# Dies ist ein Test!
 
 #------------------------------------------------------------------------------
 # Load necessary packages
