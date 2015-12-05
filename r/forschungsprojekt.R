@@ -19,8 +19,10 @@ library(car)
 
 # Warning! R does not work with the usual Windows-style backslashes 
 #   use ordinary slashes instead! 
-datafile <- "/home/vagrant/Desktop/Dokumente/datasets/ALLBUS2012/ZA4614_v1-1-1.dta"
-# datafile <- "/home/arne/Downloads/ZA4614_v1-1-1.dta"
+datafile <- "data/ZA4614_v1-1-1.dta"
+# Just put your data file in the "data" subdirectory under your "wage" directory
+# Remember: Do not upload the data into the repository!
+# The .gitignore file in "data" should prevent doing that by accident
 
 #------------------------------------------------------------------------------
 # Load data (ALLBUS 2012, V1.1.1, doi:10.4232/1.11753)
@@ -226,13 +228,24 @@ table(issp$kindsum)
 issp$v249 # Hauptberuf Stunden pro Woche
 issp$v257 # Nebenerwerb Stunden pro Woche
 
-issp$HBM <- issp$v249 * 4
+# Exakte Wochen pro Monat
+wprom <- 365.25 / 7 / 12
+
+issp$HBM <- issp$v249 * wprom
 issp$HBM
+summary(issp$HBM)
+summary(issp$HBM[issp$HBM < 4000])
+qplot(HBM, data = issp, geom = "histogram")
+qplot(HBM, data = issp[issp$HBM < 4000,], geom = "histogram")
 issp$HBM[issp$HBM>=3000] <- NA
 count(issp$HBM)
 
-issp$NEM <- issp$v257 * 4
+issp$NEM <- issp$v257 * wprom
 issp$NEM
+summary(issp$NEM)
+summary(issp$NEM[issp$NEM < 4000])
+qplot(NEM, data = issp, geom = "histogram")
+qplot(NEM, data = issp[issp$NEM < 4000,], geom = "histogram")
 issp$NEM[issp$NEM>=3000] <- NA
 count(issp$NEM)
 
@@ -246,11 +259,21 @@ count(issp$monatsstunden)
 # 3) Stundenlohn ausrechnen
 
 count(issp$v344)
+summary(issp$v344)
+summary(issp$v344[issp$v344 < 99997])
 issp$einkommen <- issp$v344
 issp$einkommen[issp$einkommen>=33000] <- NA
-issp$stundenlohn <- issp$einkommen / issp$monatsstunden
-count(issp$stundenlohn)
+count(issp$einkommen)
+qplot(einkommen, data = issp, geom = "histogram")
 
+issp$einkommen[issp$einkommen == 0] <- NA # Einkommensuntergrenze, die berücksichtigt werden soll
+issp$einkommen[issp$monatsstunden == 0] <- NA # Monatsstundengrenze, die berücksichtigt werden soll
+issp$stundenlohn <- issp$einkommen / issp$monatsstunden
+
+count(issp$stundenlohn)
+qplot(stundenlohn, data = issp, geom = "histogram")
+qplot(stundenlohn, data = issp[issp$stundenlohn < 60,], geom = "histogram")
+count(issp$stundenlohn[issp$stundenlohn >= 60])
 
 
 # Boxplot Status und Einkommen
