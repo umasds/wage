@@ -19,7 +19,7 @@ library(car)
 
 # Warning! R does not work with the usual Windows-style backslashes 
 #   use ordinary slashes instead! 
-datafile <- "data/ZA4614_v1-1-1.dta"
+datafile <- "C:/Users/Isy/Documents/Uni/Allgemeine und Spezielle Soziologie/FS Social Data Science/datasets/ALLBUS2012/ZA4614_v1-1-1.dta"
 # Just put your data file in the "data" subdirectory under your "wage" directory
 # Remember: Do not upload the data into the repository!
 # The .gitignore file in "data" should prevent doing that by accident
@@ -43,8 +43,10 @@ class(data$v632)
 
 detach(data)
 
-issp <- data[data$v632 == "issp familie",]
-
+isspfam <- data[data$v632 == "issp familie",]
+v30 <- "C:/Users/Isy/Documents/Uni/Allgemeine und Spezielle Soziologie/FS Social Data Science/datasets/ALLBUS2012/v30.dta"
+isspfam$v30 <- NULL
+issp <- merge(isspfam,v30)
 
 summary(issp$v217)
 class(issp$v217)
@@ -278,6 +280,15 @@ count(issp$stundenlohn[issp$stundenlohn >= 60])
 
 # Boxplot Status und Einkommen
 qplot(x = status, y = v344, data = issp[v344 < 20000,], geom = "boxplot")
+
+
+
+# Motivation
+describe(issp$v30)
+table(issp$v30)
+qplot(v30, geom = "histogram")
+
+
 
 
 # Histogram without missing category
