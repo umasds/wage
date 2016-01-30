@@ -13,13 +13,14 @@ library(foreign) # Import "foreign" datasets, e.g. SPSS, Stata, etc.
 library(Hmisc) # Various convenience functions
 library(plyr)
 library(car)
+library(readstata13)
 
 #------------------------------------------------------------------------------
 # Define some constants (like filenames, paths, etc.) for consistent use
 
 # Warning! R does not work with the usual Windows-style backslashes 
 #   use ordinary slashes instead! 
-datafile <- "C:/Users/Isy/Documents/Uni/Allgemeine und Spezielle Soziologie/FS Social Data Science/datasets/ALLBUS2012/ZA4614_v1-1-1.dta"
+datafile <- "C:/Users/Isy/Documents/Uni/Allgemeine und Spezielle Soziologie/FS Social Data Science/datasets/ALLBUS2012/issp_familie_bereinigt_stata12.dta"
 # Just put your data file in the "data" subdirectory under your "wage" directory
 # Remember: Do not upload the data into the repository!
 # The .gitignore file in "data" should prevent doing that by accident
@@ -29,24 +30,16 @@ datafile <- "C:/Users/Isy/Documents/Uni/Allgemeine und Spezielle Soziologie/FS S
 # Please always use correct and precise citations for datasets
 # E.g. ALLBUS 2012 info were retrieved here:
 # - https://dbk.gesis.org/DBKSearch/SDESC2.asp?no=4614&tab=3&db=D&dab=0
-data <- read.dta(datafile)
+issp <- read.dta(datafile)
 
 
 #------------------------------------------------------------------------------
 # Some descriptions
 
-describe(data) # Describe the complete dataset
-attach(data) # Attach dataset so we can do away with the "data$ ..."
+describe(issp) # Describe the complete dataset
+attach(issp) # Attach dataset so we can do away with the "issp$ ..."
 
-summary(data$v632)
-class(data$v632)
 
-detach(data)
-
-isspfam <- data[data$v632 == "issp familie",]
-v30 <- "C:/Users/Isy/Documents/Uni/Allgemeine und Spezielle Soziologie/FS Social Data Science/datasets/ALLBUS2012/v30.dta"
-isspfam$v30 <- NULL
-issp <- merge(isspfam,v30)
 
 summary(issp$v217)
 class(issp$v217)
@@ -71,13 +64,6 @@ qplot(v220, data = data[data$v220 != 999,], geom = "histogram")
 # Box plot by gender without missing category
 qplot(x = v217, y = v220, data = data[data$v220 != 999,], geom = "boxplot")
 
-
-#--------
-# Gender role attitudes 
-# V633 - "Eine berufst?tige Mutter kann ein genauso herzliches und  
-#   vertrauensvolles Verh?ltnis zu ihren Kindern finden wie eine Mutter, die  
-#   nicht berufst?tigist"
-describe(v633)
 
 
 #-----------
@@ -176,8 +162,6 @@ levels(issp$status)[levels(issp$status)=="frau.ja"] <- "Mutter"
 levels(issp$status)[levels(issp$status)=="frau.nein"] <- "kinderlose Frau"
 
 
-# Data frame für Kinder
-df = data.frame(v353, v363, v373, v383, v393, v403, v413)
 
 
 # Kindervariable anschauen
@@ -225,40 +209,28 @@ table(issp$kindsum)
 
 # Stundenlohn
 
-# 1) Monatsstunden Haubtberuf und Nebenerwerb
+# 1) Monatsstunden Hauptberuf
 
 issp$v249 # Hauptberuf Stunden pro Woche
-issp$v257 # Nebenerwerb Stunden pro Woche
+
 
 # Exakte Wochen pro Monat
 wprom <- 365.25 / 7 / 12
 
-issp$HBM <- issp$v249 * wprom
-issp$HBM
-summary(issp$HBM)
-summary(issp$HBM[issp$HBM < 4000])
-qplot(HBM, data = issp, geom = "histogram")
-qplot(HBM, data = issp[issp$HBM < 4000,], geom = "histogram")
-issp$HBM[issp$HBM>=3000] <- NA
-count(issp$HBM)
-
-issp$NEM <- issp$v257 * wprom
-issp$NEM
-summary(issp$NEM)
-summary(issp$NEM[issp$NEM < 4000])
-qplot(NEM, data = issp, geom = "histogram")
-qplot(NEM, data = issp[issp$NEM < 4000,], geom = "histogram")
-issp$NEM[issp$NEM>=3000] <- NA
-count(issp$NEM)
-
-
-# 2) Addieren
-
-issp$monatsstunden <- issp$HBM + issp$NEM
+issp$monatsstunden <- issp$v249 * wprom
+issp$monatstunden
+summary(issp$monatsstunden)
+summary(issp$monatstunden[issp$monatsstunden < 4000])
+qplot(monatsstunden, data = issp, geom = "histogram")
+qplot(monatsstunden, data = issp[issp$monatsstunden < 4000,], geom = "histogram")
+issp$monatsstunden[issp$monatsstunden>=3000] <- NA
 count(issp$monatsstunden)
 
 
-# 3) Stundenlohn ausrechnen
+
+
+
+# 2) Stundenlohn ausrechnen
 
 count(issp$v344)
 summary(issp$v344)
@@ -298,23 +270,23 @@ describe(v687)
 table(issp$vater, v687)
 
 # Show categories
-levels(v633) 
+levels(v639) 
 
-# Crosstab of v633 and gender
-table(v633, v217)
+# Crosstab of v639 and gender
+table(v639, v217)
 
-# Row percentages of v633 and gender
-round(prop.table(table(v633, v217), 1) * 100, 2)
+# Row percentages of v639 and gender
+round(prop.table(table(v639, v217), 1) * 100, 2)
 
-# Column percentages of v633 and gender
-round(prop.table(table(v633, v217), 2) * 100, 2)
+# Column percentages of v639 and gender
+round(prop.table(table(v639, v217), 2) * 100, 2)
 
 # Bar chart without missing categories
-qplot(v633, fill = v633, data = data[v633 %in% levels(v633)[1:5],], 
+qplot(v639, fill = v639, data = data[v639 %in% levels(v639)[1:5],], 
       geom = "bar") 
 
 # Bar chart grouped by gender without missing categories
-qplot(v633, fill = v217, data = data[v633 %in% levels(v633)[1:5],], 
+qplot(v639, fill = v217, data = data[v639 %in% levels(v639)[1:5],], 
       geom = "bar", position = position_dodge()) 
 
 
