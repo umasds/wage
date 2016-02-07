@@ -24,7 +24,7 @@ library(dplyr)
 
 # Warning! R does not work with the usual Windows-style backslashes 
 #   use ordinary slashes instead! 
-datafile <- "C:/Users/Isy/Documents/Uni/Allgemeine und Spezielle Soziologie/FS Social Data Science/datasets/ALLBUS2012/issp_familie_bereinigt_stata12.dta"
+datafile <- "C:/Users/Isy/Documents/Uni/Allgemeine und Spezielle Soziologie/FS Social Data Science/datasets/ALLBUS2012/issp_familie_bereinigt_stata12_mit_vatermutter.dta"
 # Just put your data file in the "data" subdirectory under your "wage" directory
 # Remember: Do not upload the data into the repository!
 # The .gitignore file in "data" should prevent doing that by accident
@@ -387,20 +387,27 @@ mod4 <- lm(v344 ~ v220 + v220sq + v217 + v220:v217 + v220sq:v217, data = work)
 summary(mod4)
 
 
+analysis = data.frame(issp$stundenlohn, issp$v217, issp$v220, issp$v8, issp$v30, issp$v230,
+                      issp$v231, issp$v232, issp$v233, issp$v234, issp$v235, issp$v236, issp$v237, 
+                      issp$v238, issp$v239, issp$v240, issp$v245, issp$v247, issp$v248, issp$mars, 
+                      issp$kindsum, issp$v639, issp$v666, issp$v668, issp$v670, issp$v708)
+
+
+
 
 
 
 # Funktion AME
 
-ame <- function(data.name, meth="dt", func, var.name, fromtoby=NULL, plotTree=FALSE, plotPV=FALSE){
+ame <- function(analysis, meth="dt", func, stundenlohn, fromtoby=NULL, plotTree=FALSE, plotPV=FALSE){
   # Linear Regression
   if (meth == "lm") {
-    fit <- glm(func, family=gaussian(link = "identity"), data=data.name)
+    fit <- glm(func, family=gaussian(link = "identity"), data=analysis)
     sfit <- summary(fit)
   }
   # Decision Tree
   if (meth == "dt") {
-    fit <- rpart(func, cp=0.0001, method="anova", data=data.name) # t.fit
+    fit <- rpart(func, cp=0.0001, method="anova", data=analysis) # t.fit
     #fit<- prune(t.fit, cp= t.fit$cptable[which.min(t.fit$cptable[,"xerror"]),"CP"])
     if (plotTree == "TRUE") {
       plot(fit, uniform=TRUE, main="Pruned Regression Tree")
@@ -418,7 +425,7 @@ ame <- function(data.name, meth="dt", func, var.name, fromtoby=NULL, plotTree=FA
   }
   # Random Forest
   if (meth == "rf") {
-    fit <- randomForest(func, data=data.name)
+    fit <- randomForest(func, data=analysis)
     sfit <- importance(fit)
   }
   # Random Forest Two Trees
