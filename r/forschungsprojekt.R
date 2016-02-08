@@ -399,33 +399,44 @@ analysis = data.frame(issp$stundenlohn, issp$v217, issp$v220, issp$v8, issp$v30,
 
 # Funktion AME
 
-ame <- function(analysis, meth="dt", func, stundenlohn, fromtoby=NULL, plotTree=FALSE, plotPV=FALSE){
+ame <- function(data.name, meth="dt", func, var.name, fromtoby=NULL, plotTree=FALSE, plotPV=FALSE){
   # Linear Regression
   if (meth == "lm") {
-    fit <- glm(func, family=gaussian(link = "identity"), data=analysis)
+    fit <- glm(func, family=gaussian(link = "identity"), data=data.name)
     sfit <- summary(fit)
   }
   # Decision Tree
   if (meth == "dt") {
-    fit <- rpart(func, cp=0.0001, method="anova", data=analysis) # t.fit
+    fit <- rpart(func, cp=0.0001, method="anova", data=data.name) # t.fit
     #fit<- prune(t.fit, cp= t.fit$cptable[which.min(t.fit$cptable[,"xerror"]),"CP"])
     if (plotTree == "TRUE") {
-      plot(fit, uniform=TRUE, main="Pruned Regression Tree")
+      plot(fit, uniform=TRUE, main="Regression Tree")
       text(fit, cex=.6)
     }
     sfit <- fit
   }
   # Decision Two Tree
   if (meth == "dtt") {
-    t0.fit <- rpart(func, method="anova", data=subset(data.name, data.name[var.name]==0))
-    p0.fit <- prune(t0.fit, cp= t0.fit$cptable[which.min(t0.fit$cptable[,"xerror"]),"CP"])
-    t1.fit <- rpart(func, method="anova", data=subset(data.name, data.name[var.name]==1))
-    p1.fit <- prune(t1.fit, cp= t1.fit$cptable[which.min(t1.fit$cptable[,"xerror"]),"CP"])
-    sfit <- list(p0.fit, p1.fit)
+    if ((is.factor(data.name[[var.name]]) & length(levels(data.name[[var.name]]))==2) | (nrow(unique(data.name[var.name]))==2)) { # hier weitere (u.w.u.) oder Bedingungen
+      #if (is.factor(data.name[[var.name]])) {
+      #t0.fit <- rpart(func, method="anova", data=subset(data.name, data.name[var.name]==levels(data.name[[var.name]])[1]))
+      #t1.fit <- rpart(func, method="anova", data=subset(data.name, data.name[var.name]==levels(data.name[[var.name]])[2]))
+      #}
+      #else{
+      t0.fit <- rpart(func, method="anova", data=subset(data.name, data.name[var.name]==0))
+      t1.fit <- rpart(func, method="anova", data=subset(data.name, data.name[var.name]==1))
+      #}
+      p0.fit <- prune(t0.fit, cp= t0.fit$cptable[which.min(t0.fit$cptable[,"xerror"]),"CP"])
+      p1.fit <- prune(t1.fit, cp= t1.fit$cptable[which.min(t1.fit$cptable[,"xerror"]),"CP"])
+      sfit <- list(p0.fit, p1.fit)
+    }
+    else {
+      print("ToDo")
+    }
   }
   # Random Forest
   if (meth == "rf") {
-    fit <- randomForest(func, data=analysis)
+    fit <- randomForest(func, data=data.name)
     sfit <- importance(fit)
   }
   # Random Forest Two Trees
@@ -435,28 +446,68 @@ ame <- function(analysis, meth="dt", func, stundenlohn, fromtoby=NULL, plotTree=
     sfit <- list(importance(p0.fit), importance(p1.fit))
   }
   # Type of Variable
-  if (nrow(unique(data.name[var.name]))==2) {
+  if ((length(levels(data.name[[var.name]]))==2) | (nrow(unique(data.name[var.name]))==2)) {
     if (meth == "dtt" | meth == "rftt") {
       # Predictions
-      y.pred.fit.1 <- predict(p0.fit, data.name)
-      y.pred.fit.2 <- predict(p1.fit, data.name)    
+      pv.1 <- mean(predict(p0.fit, data.name))
+      pv.2 <- mean(predict(p1.fit, data.name))
     }
     else {
-      # Assigning values
       data.1 <- data.name
-      data.1[var.name] <- 0
       data.2 <- data.name
+      #if (is.factor(data.name[[var.name]])) {
+      #data.1[var.name] <- levels(data.name[[var.name]])[1]
+      #data.2[var.name] <- levels(data.name[[var.name]])[2]
+      #}
+      #else{
+      # Assigning values
+      data.1[var.name] <- 0
       data.2[var.name] <- 1
+      #}
       # Predictions
-      y.pred.fit.1 <- predict(fit, data.1)
-      y.pred.fit.2 <- predict(fit, data.2)
+      pv.1 <- mean(predict(fit, data.1))
+      pv.2 <- mean(predict(fit, data.2))
     }
     # AMEs
-    ame <- mean(y.pred.fit.1) - mean(y.pred.fit.2)
+    pv <- c("0"=pv.1, "1"=pv.2)
+    ame <- pv.2 - pv.1
     # Output
-    output <- list(ame, sfit)
+    output <- list(ame=ame, pv=pv, fit=sfit)
   }
-  else{
+  if ((is.factor(data.name[[var.name]]) | is.ordered(data.name[[var.name]])) & length(levels(data.name[[var.name]])>2)) {
+    if (meth == "dtt" | meth == "rftt") {
+      # Assigning values and predict for multiple trees
+      pv <- NULL
+      counter <- 1
+      for (i in levels(data.name[[var.name]])) {
+        data <- data.name
+        data[var.name] <- i
+        pv[counter] <- mean(predict(fit, data))
+        counter <- sum(counter, 1)
+      }
+    }
+    else {
+      # Assigning values and predict
+      pv <- NULL
+      counter <- 1
+      for (i in levels(data.name[[var.name]])) {
+        data <- data.name
+        data[var.name] <- i
+        pv[counter] <- mean(predict(fit, data))
+        counter <- sum(counter, 1)
+      }
+    }
+    if (plotPV == "TRUE") {
+      plot(levels(data.name[[var.name]]), pv, type="h")
+      #plot(tail(steps, length(steps)-1), slope)
+    }
+    # AMEs
+    names(pv) <- levels(data.name[[var.name]])
+    ame <- as.dist(replicate(length(pv), pv) - t(replicate(length(pv), pv)))
+    # Output
+    output <- list(ame=ame, pv=pv, fit=sfit)
+  }
+  if (!is.factor(data.name[[var.name]]) & !is.ordered(data.name[[var.name]]) & (nrow(unique(data.name[var.name]))>2)) {
     if (is.null(fromtoby)) {
       print("Sequence from to by needed")
     }
@@ -479,20 +530,37 @@ ame <- function(analysis, meth="dt", func, stundenlohn, fromtoby=NULL, plotTree=
         #plot(tail(steps, length(steps)-1), slope)
       }
       # AMEs
+      names(pv) <- steps
       ame <- mean(slope)
       # Output
-      output <- list(ame, pv, sfit)
+      output <- list(ame=ame, pv=pv, fit=sfit)
     }
   }
   return(output)
 }
 
-# Bootstrapping
+
 ame.boot <- function(data.name, rep=100, meth="dt", func, var.name, fromtoby) {
-  ame.boot <- replicate(rep, unlist(ame(sample_n(data.name, nrow(data.name), replace=T), meth, func, var.name, fromtoby)[1]))
-  mean <- mean(ame.boot)
-  se <- sd(ame.boot)
-  error <- qnorm(0.975) * se
-  output <- c(ame=mean, se=se, lci=mean-error, uci=mean+error)
+  if (is.factor(data.name[[var.name]]) & length(levels(data.name[[var.name]])>2)) {
+    ame.boot <- replicate(rep, ame(sample_n(data.name, nrow(data.name), replace=T), meth, func, var.name, fromtoby)[1])
+    #mean <- Reduce("+", ame.boot) / length(ame.boot)
+    mean.vec <- apply(simplify2array(ame.boot), 1, mean)
+    mean <- matrix(0, length(mean.vec), length(mean.vec))  
+    mean[lower.tri(mean, diag=FALSE)] <- mean.vec    
+    se.vec <- apply(simplify2array(ame.boot), 1, sd)
+    se <- matrix(0, length(se.vec), length(se.vec))  
+    se[lower.tri(se, diag=FALSE)] <- se.vec
+    p <- round(2*pt(-abs(mean/se), df=rep-1), 3)
+    output <- list(ame=mean, se=se, p=p)    
+  }
+  else{
+    ame.boot <- replicate(rep, unlist(ame(sample_n(data.name, nrow(data.name), replace=T), meth, func, var.name, fromtoby)[1]))
+    mean <- round(mean(ame.boot), 3)
+    se <- round(sd(ame.boot), 3)
+    error <- round((qnorm(0.975) * se), 3)
+    p <- round(2*pt(-abs(mean/se), df=rep-1), 3) # 2*pnorm(-abs(mean/se))
+    output <- c(ame=mean, se=se, p=p, lci=mean-error, uci=mean+error)
+  }
   return(output)
 }
+
