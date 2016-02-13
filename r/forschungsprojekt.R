@@ -284,6 +284,10 @@ describe(issp$v30)
 table(issp$v30)
 qplot(v30, geom = "histogram")
 
+# convert to factor
+issp$v30 <-as.factor(issp$v30)
+class(issp$v30)
+
 
 
 # mean hours for domestic work fathers vs. non-fathers & mothers vs. non-mothers
@@ -387,17 +391,12 @@ mod4 <- lm(v344 ~ v220 + v220sq + v217 + v220:v217 + v220sq:v217, data = work)
 summary(mod4)
 
 
-analysis = data.frame(issp$stundenlohn, issp$v217, issp$v220, issp$v8, issp$v30, issp$v230,
-                      issp$v231, issp$v232, issp$v233, issp$v234, issp$v235, issp$v236, issp$v237, 
-                      issp$v238, issp$v239, issp$v240, issp$v245, issp$v247, issp$v248, issp$mars, 
-                      issp$kindsum, issp$v639, issp$v666, issp$v668, issp$v670, issp$v708)
 
 
 
 
 
-
-# Funktion AME
+# Function AME
 
 ame <- function(data.name, meth="dt", func, var.name, fromtoby=NULL, plotTree=FALSE, plotPV=FALSE){
   # Linear Regression
