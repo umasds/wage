@@ -24,7 +24,8 @@ library(dplyr)
 
 # Warning! R does not work with the usual Windows-style backslashes 
 #   use ordinary slashes instead! 
-datafile <- "C:/Users/Isy/Documents/Uni/Allgemeine und Spezielle Soziologie/FS Social Data Science/datasets/ALLBUS2012/issp_familie_bereinigt_stata12_mit_vatermutter.dta"
+#datafile <- "C:/Users/Isy/Documents/Uni/Allgemeine und Spezielle Soziologie/FS Social Data Science/datasets/ALLBUS2012/issp_familie_bereinigt_stata12_mit_vatermutter.dta"
+datafile <- "r/issp_familie_bereinigt_stata12_mit_vatermutter.dta"
 # Just put your data file in the "data" subdirectory under your "wage" directory
 # Remember: Do not upload the data into the repository!
 # The .gitignore file in "data" should prevent doing that by accident
@@ -391,14 +392,10 @@ mod4 <- lm(v344 ~ v220 + v220sq + v217 + v220:v217 + v220sq:v217, data = work)
 summary(mod4)
 
 
-
-
-
-
-
 # Function AME
-
 ame <- function(data.name, meth="dt", func, var.name, fromtoby=NULL, plotTree=FALSE, plotPV=FALSE){
+
+  #-------------------- Fit models --------------------#
   # Linear Regression
   if (meth == "lm") {
     fit <- glm(func, family=gaussian(link = "identity"), data=data.name)
@@ -417,14 +414,14 @@ ame <- function(data.name, meth="dt", func, var.name, fromtoby=NULL, plotTree=FA
   # Decision Two Tree
   if (meth == "dtt") {
     if ((is.factor(data.name[[var.name]]) & length(levels(data.name[[var.name]]))==2) | (nrow(unique(data.name[var.name]))==2)) { # hier weitere (u.w.u.) oder Bedingungen
-      #if (is.factor(data.name[[var.name]])) {
-      #t0.fit <- rpart(func, method="anova", data=subset(data.name, data.name[var.name]==levels(data.name[[var.name]])[1]))
-      #t1.fit <- rpart(func, method="anova", data=subset(data.name, data.name[var.name]==levels(data.name[[var.name]])[2]))
-      #}
-      #else{
+      if (is.factor(data.name[[var.name]])) {
+      t0.fit <- rpart(func, method="anova", data=subset(data.name, data.name[var.name]==levels(data.name[[var.name]])[1]))
+      t1.fit <- rpart(func, method="anova", data=subset(data.name, data.name[var.name]==levels(data.name[[var.name]])[2]))
+      }
+      else{
       t0.fit <- rpart(func, method="anova", data=subset(data.name, data.name[var.name]==0))
       t1.fit <- rpart(func, method="anova", data=subset(data.name, data.name[var.name]==1))
-      #}
+      }
       p0.fit <- prune(t0.fit, cp= t0.fit$cptable[which.min(t0.fit$cptable[,"xerror"]),"CP"])
       p1.fit <- prune(t1.fit, cp= t1.fit$cptable[which.min(t1.fit$cptable[,"xerror"]),"CP"])
       sfit <- list(p0.fit, p1.fit)
@@ -444,6 +441,8 @@ ame <- function(data.name, meth="dt", func, var.name, fromtoby=NULL, plotTree=FA
     p1.fit <- randomForest(func, method="anova", data=subset(data.name, data.name[var.name]==1))
     sfit <- list(importance(p0.fit), importance(p1.fit))
   }
+
+  #-------------------- Predictions --------------------#
   # Type of Variable
   if ((length(levels(data.name[[var.name]]))==2) | (nrow(unique(data.name[var.name]))==2)) {
     if (meth == "dtt" | meth == "rftt") {
@@ -454,15 +453,15 @@ ame <- function(data.name, meth="dt", func, var.name, fromtoby=NULL, plotTree=FA
     else {
       data.1 <- data.name
       data.2 <- data.name
-      #if (is.factor(data.name[[var.name]])) {
-      #data.1[var.name] <- levels(data.name[[var.name]])[1]
-      #data.2[var.name] <- levels(data.name[[var.name]])[2]
-      #}
-      #else{
+      if (is.factor(data.name[[var.name]])) {
+      data.1[var.name] <- as.factor(levels(data.name[[var.name]])[1])
+      data.2[var.name] <- as.factor(levels(data.name[[var.name]])[2])
+      }
+      else{
       # Assigning values
       data.1[var.name] <- 0
       data.2[var.name] <- 1
-      #}
+      }
       # Predictions
       pv.1 <- mean(predict(fit, data.1))
       pv.2 <- mean(predict(fit, data.2))
@@ -473,17 +472,18 @@ ame <- function(data.name, meth="dt", func, var.name, fromtoby=NULL, plotTree=FA
     # Output
     output <- list(ame=ame, pv=pv, fit=sfit)
   }
-  if ((is.factor(data.name[[var.name]]) | is.ordered(data.name[[var.name]])) & length(levels(data.name[[var.name]])>2)) {
+  if ((is.factor(data.name[[var.name]]) | is.ordered(data.name[[var.name]])) & length(levels(data.name[[var.name]]))>2) {
     if (meth == "dtt" | meth == "rftt") {
       # Assigning values and predict for multiple trees
-      pv <- NULL
-      counter <- 1
-      for (i in levels(data.name[[var.name]])) {
-        data <- data.name
-        data[var.name] <- i
-        pv[counter] <- mean(predict(fit, data))
-        counter <- sum(counter, 1)
-      }
+      #pv <- NULL
+      #counter <- 1
+      #for (i in levels(data.name[[var.name]])) {
+      #  data <- data.name
+      #  data[var.name] <- i
+      #  pv[counter] <- mean(predict(fit, data))
+      #  counter <- sum(counter, 1)
+      #}
+      print("ToDo")
     }
     else {
       # Assigning values and predict
