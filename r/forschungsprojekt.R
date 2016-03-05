@@ -540,7 +540,7 @@ ame <- function(data.name, meth="dt", func, var.name, fromtoby=NULL, plotTree=FA
 
 
 ame.boot <- function(data.name, rep=100, meth="dt", func, var.name, fromtoby) {
-  if (is.factor(data.name[[var.name]]) & length(levels(data.name[[var.name]])>2)) {
+  if (is.factor(data.name[[var.name]]) & length(levels(data.name[[var.name]]))>2) {
     ame.boot <- replicate(rep, ame(sample_n(data.name, nrow(data.name), replace=T), meth, func, var.name, fromtoby)[1])
     #mean <- Reduce("+", ame.boot) / length(ame.boot)
     mean.vec <- apply(simplify2array(ame.boot), 1, mean)
