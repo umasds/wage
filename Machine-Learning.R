@@ -8,8 +8,10 @@ attach(analysis)
 summary(analysis)
 
 # convert to factor
-v30 <-as.factor(v30)
-class(v30)
+analysis$v30 <- as.factor(analysis$v30) 
+analysis$v230 <- as.factor(analysis$v230) 
+analysis$v639 <- as.factor(analysis$v639) 
+analysis$v247 <- as.factor(analysis$v247) 
 
 
 #1 LM)
