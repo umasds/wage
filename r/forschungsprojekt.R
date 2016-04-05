@@ -24,8 +24,8 @@ library(dplyr)
 
 # Warning! R does not work with the usual Windows-style backslashes 
 #   use ordinary slashes instead! 
-#datafile <- "C:/Users/Isy/Documents/Uni/Allgemeine und Spezielle Soziologie/FS Social Data Science/datasets/ALLBUS2012/issp_familie_bereinigt_stata12_mit_vatermutter.dta"
-datafile <- "r/issp_familie_bereinigt_stata12_mit_vatermutter.dta"
+datafile <- "C:/Users/Isy/Documents/Uni/Allgemeine und Spezielle Soziologie/FS Social Data Science/datasets/ALLBUS2012/issp_familie_bereinigt_stata12_mit_vatermutter_ohne ausreisser.dta"
+# datafile <- "r/issp_familie_bereinigt_stata12_mit_vatermutter.dta"
 # Just put your data file in the "data" subdirectory under your "wage" directory
 # Remember: Do not upload the data into the repository!
 # The .gitignore file in "data" should prevent doing that by accident
